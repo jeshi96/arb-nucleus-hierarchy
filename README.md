@@ -108,22 +108,36 @@ Running Code
 -------
 The applications take the input graph as input, as well as flags to specify
 the parameters of the (r, s) nucleus decomposition algorithm and desired 
-optimizations. Note that the `-s` flag must be set to indicate a symmetric 
+optimizations. 
+Note that the `-s` flag must be set to indicate a symmetric 
 (undirected) graph, and the `-rounds 1` argument must be passed in.
-Also, the following default flags must necessarily be passed in as well: 
+
+For the exact nucleus decomposition hierarchy (in `benchmarks/NucleusDecomposition/`), 
+the following default flags must necessarily be passed in as well: 
 `-compress -relabel -efficient 5 -tt 5 -contig`.
-
-
-
-inline = ["", "-efficient_inline"] #"", "-inline", "-efficient_inline"]
-inline_pre = ["ni", "ei"] #"ni", "i", "ei"]
-
-
 The options for arguments are:
 * `-r` followed by an integer specifying r
 * `-ss` followed by an integer specifying s
 * `-efficient_inline`, which should be used if ANH-EL is desired (the default is ANH-TE)
 * `-inline`, which should be used if ANH-BL is desired (the default is ANH-TE)
+
+To run the approximate nucleus decomposition hierarchy (in `benchmarks/ApproxNucleusDecomposition/`), 
+the following default flags must necessarily be passed in as well: 
+`-compress -relabel -efficient 5 -tt 5 -contig -approx`.
+The options for arguments are:
+* `-r` followed by an integer specifying r
+* `-ss` followed by an integer specifying s
+* `-efficient_inline`, which should be used if ANH-EL is desired (the default is ANH-TE)
+* `-inline`, which should be used if ANH-BL is desired (the default is ANH-TE)
+* `-approx_delta` followed by a float specifying delta, for the approximation parameter
+
+For the k-core and k-truss hierarchies, the `-efficient_inline` and `-inline`
+flags operate in the same way as above, but the other flags are unnecessary.
+To run approximate k-core or k-truss, include the `-approx` flag, and 
+delta can be set using:
+* `-approx_delta` followed by a float specifying delta
+
+
 
 **Example Usage**
 
