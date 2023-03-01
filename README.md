@@ -1,233 +1,67 @@
-# GBBS: Graph Based Benchmark Suite  ![Bazel build](https://github.com/paralg/gbbs/workflows/CI/badge.svg)
+# Shared-Memory Parallel Nucleus Decomposition Hierarchy
 
 Organization
 --------
 
-This repository contains code for our SPAA paper "Theoretically Efficient
-Parallel Graph Algorithms Can Be Fast and Scalable" (SPAA'18). It includes
-implementations of the following parallel graph algorithms:
+This repository contains code for our shared-memory parallel (r, s)
+nucleus decomposition algorithms. Note
+that the repository uses the
+[Graph-Based Benchmark Suite (GBBS)](https://github.com/ParAlg/gbbs)
+for parallel primitives and benchmarks.
 
-**Connectivity Problems**
-* Low-Diameter Decomposition
-* Connectivity
-* Spanning Forest
-* Biconnectivity
-* Minimum Spanning Tree
-* Strongly Connected Components
+The `benchmarks/NucleusDecomposition/` directory contains the main executable for the exact hierarchy construction, 
+`NucleusDecomposition_main`. The `benchmarks/ApproxNucleusDecomposition/` 
+directory contains the main executable for the approximate hierarchy construction, 
+`NucleusDecomposition_main`.
 
-**Covering Problems**
-* Coloring
-* Maximal Matching
-* Maximal Independent Set
-* Approximate Set Cover
+The `benchmarks/KCore/JulienneDBS17/` and `benchmarks/KTruss/` directories contain
+the main executables for the k-core hierarchy and k-truss hierarchy constructions
+respectively, where the executables are `KCore_main` and `KTruss_main` respectively.
 
-**Eigenvector Problems**
-* PageRank
-
-**Substructure Problems**
-* Triangle Counting
-* Approximate Densest Subgraph
-* k-Core (coreness)
-
-**Shortest Path Problems**
-* Unweighted SSSP (Breadth-First Search)
-* General Weight SSSP (Bellman-Ford)
-* Integer Weight SSSP (Weighted Breadth-First Search)
-* Single-Source Betweenness Centrality
-* Single-Source Widest Path
-* k-Spanner
-
-The code for these applications is located in the `benchmark` directory. The
-implementations are based on the Ligra/Ligra+/Julienne graph processing
-frameworks. The framework code is located in the `src` directory.
-
-The codes used here are still in development, and we plan to add more
-applications/benchmarks. We currently include the following extra codes,
-which are part of ongoing work.
-
-* experimental/KTruss
-
-If you use our work, please cite our [paper](https://arxiv.org/abs/1805.05208):
-
-```
-@inproceedings{dhulipala2018theoretically,
-  author    = {Laxman Dhulipala and
-               Guy E. Blelloch and
-               Julian Shun},
-  title     = {Theoretically Efficient Parallel Graph Algorithms Can Be Fast and
-               Scalable},
-  booktitle = {ACM Symposium on Parallelism in Algorithms and Architectures (SPAA)},
-  year      = {2018},
-}
-```
 
 Compilation
 --------
 
 Compiler:
+* g++ &gt;= 7.4.0 with pthread support for the [ParlayLib](https://github.com/cmuparlay/parlaylib) scheduler
 * g++ &gt;= 7.4.0 with support for Cilk Plus
-* g++ &gt;= 7.4.0 with pthread support (Homemade Scheduler)
+
 
 Build system:
-* [Bazel](https://docs.bazel.build/versions/master/install.html) 2.1.0
-* Make --- though our primary build system is Bazel, we also maintain Makefiles
-  for those who wish to run benchmarks without installing Bazel.
+* [Bazel](https:://bazel.build) 2.0.0
 
-The default compilation uses a lightweight scheduler developed at CMU (Homemade)
-for parallelism, which results in comparable performance to Cilk Plus. The
-half-lengths for certain functions such as histogramming are lower using
-Homemade, which results in better performance for codes like KCore.
+We describe the build system for our exact hierarchy construction, but note that
+the same concept applies to our approximate, k-core, and k-truss hierarchy
+constructions.
+To build, navigate to the `benchmarks/NucleusDecomposition/` directory, and run:
+```sh
+$ bazel build :NucleusDecomposition_main
+```
 
-The benchmark supports both uncompressed and compressed graphs. The uncompressed
-format is identical to the uncompressed format in Ligra. The compressed format,
-called bytepd_amortized (bytepda) is similar to the parallelByte format used in
-Ligra+, with some additional functionality to support efficiently packs,
-filters, and other operations over neighbor lists.
+Most optionality from [GBBS](https://github.com/ParAlg/gbbs)
+applies. In particular, to compile benchmarks for graphs with
+more than 2^32 edges, the `LONG` command-line parameter should be set.
 
-To compile codes for graphs with more than 2^32 edges, the `LONG` command-line
-parameter should be set. If the graph has more than 2^32 vertices, the
-`EDGELONG` command-line parameter should be set. Note that the codes have not
-been tested with more than 2^32 vertices, so if any issues arise please contact
-[Laxman Dhulipala](mailto:ldhulipa@cs.cmu.edu).
-
+The default compilation is the ParlayLib scheduler (Homegrown).
 To compile with the Cilk Plus scheduler instead of the Homegrown scheduler, use
 the Bazel configuration `--config=cilk`. To compile using OpenMP instead, use
 the Bazel configuration `--config=openmp`. To compile serially instead, use the
-Bazel configuration `--config=serial`. (For the Makefiles, instead set the
-environment variables `CILK`, `OPENMP`, or `SERIAL` respectively.)
+Bazel configuration `--config=serial`.
 
-To build:
-```sh
-# For Bazel:
-$ bazel build  //...  # compiles all benchmarks
-
-# For Make:
-# First set the appropriate environment variables, e.g., first run
-# `export CILK=1` to compile with Cilk Plus.
-# After that, build using `make`.
-$ cd benchmarks/BFS/NonDeterministicBFS  # go to a benchmark
-$ make
-```
 Note that the default compilation mode in bazel is to build optimized binaries
 (stripped of debug symbols). You can compile debug binaries by supplying `-c
 dbg` to the bazel build command.
 
-The following commands cleans the directory:
+The following command cleans the directory:
 ```sh
-# For Bazel:
 $ bazel clean  # removes all executables
-
-# For Make:
-$ make clean  # removes executables for the current directory
 ```
 
-Running code
+Graph Format
 -------
-The applications take the input graph as input as well as an optional
-flag "-s" to indicate a symmetric graph.  Symmetric graphs should be
-called with the "-s" flag for better performance. For example:
 
-```sh
-# For Bazel:
-$ bazel run //benchmarks/BFS/NonDeterministicBFS:BFS_main -- -s -src 10 ~/gbbs/inputs/rMatGraph_J_5_100
-$ bazel run //benchmarks/IntegralWeightSSSP/JulienneDBS17:wBFS_main -- -s -w -src 15 ~/gbbs/inputs/rMatGraph_WJ_5_100
-
-# For Make:
-$ ./BFS -s -src 10 ../../../inputs/rMatGraph_J_5_100
-$ ./wBFS -s -w -src 15 ../../../inputs/rMatGraph_WJ_5_100
-```
-
-Note that the codes that compute single-source shortest paths (or centrality)
-take an extra `-src` flag. The benchmark is run four times by default, and can
-be changed by passing the `-rounds` flag followed by an integer indicating the
-number of runs.
-
-On NUMA machines, adding the command "numactl -i all " when running
-the program may improve performance for large graphs. For example:
-
-```sh
-$ numactl -i all bazel run [...]
-```
-
-Running code on compressed graphs
------------
-
-We make use of the bytePDA format in our benchmark, which is similar to the
-parallelByte format of Ligra+, extended with additional functionality. We have
-provided a converter utility which takes as input an uncompressed graph and
-outputs a bytePDA graph. The converter can be used as follows:
-
-```sh
-# For Bazel:
-bazel run //utils:compressor -- -s -o ~/gbbs/inputs/rMatGraph_J_5_100.bytepda ~/gbbs/inputs/rMatGraph_J_5_100
-bazel run //utils:compressor -- -s -w -o ~/gbbs/inputs/rMatGraph_WJ_5_100.bytepda ~/gbbs/inputs/rMatGraph_WJ_5_100
-
-# For Make:
-./compressor -s -o ../inputs/rMatGraph_J_5_100.bytepda ../inputs/rMatGraph_J_5_100
-./compressor -s -w -o ../inputs/rMatGraph_WJ_5_100.bytepda ../inputs/rMatGraph_WJ_5_100
-```
-
-After an uncompressed graph has been converted to the bytepda format,
-applications can be run on it by passing in the usual command-line flags, with
-an additional `-c` flag.
-
-```sh
-# For Bazel:
-$ bazel run //benchmarks/BFS/NonDeterministicBFS:BFS_main -- -s -c -src 10 ~/gbbs/inputs/rMatGraph_J_5_100.bytepda
-
-# For Make:
-$ ./BFS -s -c -src 10 ../../../inputs/rMatGraph_J_5_100.bytepda
-$ ./wBFS -s -w -c -src 15 ../../../inputs/rMatGraph_WJ_5_100.bytepda
-```
-
-When processing large compressed graphs, using the `-m` command-line flag can
-help if the file is already in the page cache, since the compressed graph data
-can be mmap'd. Application performance will be affected if the file is not
-already in the page-cache. We have found that using `-m` when the compressed
-graph is backed by SSD results in a slow first-run, followed by fast subsequent
-runs.
-
-Running code on binary-encoded graphs
------------
-We make use of a binary-graph format in our benchmark. The binary representation
-stores the representation we use for in-memory processing (compressed sparse row)
-directly on disk, which enables applications to avoid string-conversion overheads
-associated with the adjacency graph format described below. We have provided a 
-converter utility which takes as input an uncompressed graph (e.g., in adjacency
-graph format) and outputs this graph in the binary format. The converter can be 
-used as follows:
-
-```sh
-# For Bazel:
-bazel run //utils:compressor -- -s -o ~/gbbs/inputs/rMatGraph_J_5_100.binary ~/gbbs/inputs/rMatGraph_J_5_100
-
-# For Make:
-./compressor -s -o ../inputs/rMatGraph_J_5_100.binary ../inputs/rMatGraph_J_5_100
-```
-
-After an uncompressed graph has been converted to the binary format,
-applications can be run on it by passing in the usual command-line flags, with
-an additional `-b` flag. Note that the application will always load the binary
-file using mmap.
-
-```sh
-# For Bazel:
-$ bazel run //benchmarks/BFS/NonDeterministicBFS:BFS_main -- -s -b -src 10 ~/gbbs/inputs/rMatGraph_J_5_100.binary
-
-# For Make:
-$ ./BFS -s -b -src 10 ../../../inputs/rMatGraph_J_5_100.binary
-```
-
-Note that application performance will be affected if the file is not already 
-in the page-cache. We have found that using `-m` when the binary graph is backed
-by SSD or disk results in a slow first-run, followed by fast subsequent runs.
-
-
-Input Formats
------------
-We support the adjacency graph format used by the [Problem Based Benchmark
-suite](http://www.cs.cmu.edu/~pbbs/benchmarks/graphIO.html)
-and [Ligra](https://github.com/jshun/ligra).
+The applications take as input the adjacency graph format used by
+[GBBS](https://github.com/ParAlg/gbbs).
 
 The adjacency graph format starts with a sequence of offsets one for each
 vertex, followed by a sequence of directed edges ordered by their source vertex.
@@ -253,15 +87,12 @@ AdjacencyGraph
 
 This file is represented as plain text.
 
-Weighted graphs are represented in the weighted adjacency graph format. The file
-should start with the string "WeightedAdjacencyGraph". The m edge weights
-should be stored after all of the edge targets in the .adj file.
-
-**Using SNAP graphs**
+**Using SNAP Graphs**
 
 Graphs from the [SNAP dataset
-collection](https://snap.stanford.edu/data/index.html) are commonly used for
-graph algorithm benchmarks. We provide a tool that converts the most common SNAP
+collection](https://snap.stanford.edu/data/index.html) are used in our experiments. 
+We use a tool from the [GBBS](https://github.com/ParAlg/gbbs) 
+that converts the most common SNAP
 graph format to the adjacency graph format that GBBS accepts. Usage example:
 ```sh
 # Download a graph from the SNAP collection.
@@ -270,8 +101,36 @@ gzip --decompress ${PWD}/wiki-Vote.txt.gz
 # Run the SNAP-to-adjacency-graph converter.
 # Run with Bazel:
 bazel run //utils:snap_converter -- -s -i ${PWD}/wiki-Vote.txt -o <output file>
-# Or run with Make:
-#   cd utils
-#   make snap_converter
-#   ./snap_converter -s -i <input file> -o <output file>
+```
+
+
+Running Code
+-------
+The applications take the input graph as input, as well as flags to specify
+the parameters of the (r, s) nucleus decomposition algorithm and desired 
+optimizations. Note that the `-s` flag must be set to indicate a symmetric 
+(undirected) graph, and the `-rounds 1` argument must be passed in.
+Also, the following default flags must necessarily be passed in as well: 
+`-compress -relabel -efficient 5 -tt 5 -contig`.
+
+
+
+inline = ["", "-efficient_inline"] #"", "-inline", "-efficient_inline"]
+inline_pre = ["ni", "ei"] #"ni", "i", "ei"]
+
+
+The options for arguments are:
+* `-r` followed by an integer specifying r
+* `-ss` followed by an integer specifying s
+* `-efficient_inline`, which should be used if ANH-EL is desired (the default is ANH-TE)
+* `-inline`, which should be used if ANH-BL is desired (the default is ANH-TE)
+
+**Example Usage**
+
+The main executable is `NucleusDecomposition_main` in the `benchmarks/NucleusDecomposition/` directory.
+
+After navigating to the `benchmarks/NucleusDecomposition/` directory, a template command is:
+
+```sh
+$ bazel run :NucleusDecomposition_main -- -s -rounds 1 -compress -relabel -efficient 5 -tt 5 -contig -r 3 -ss 4 -efficient_inline </path/to/input/graph>
 ```
