@@ -55,8 +55,8 @@ double AppNucleusDecomposition_runner(Graph& GA, commandLine P) {
   long num_multi_levels = P.getOptionLongValue("--numberOfMultiLevels", 2);
   auto inverse_index_map_str = P.getOptionValue("--inverseIndexMap", "");
   auto update_agg_str = P.getOptionValue("--updateAggregation", "");
-  bool relabel = P.getOptionValue("--relabel") || P.getOptionValue("-relabel"); // for true, relabel graph
-  bool contiguous_space = P.getOptionValue("--contiguousSpace") || P.getOptionValue("-contig"); // for true, contiguous space
+  bool relabel = true; //P.getOptionValue("--relabel") || P.getOptionValue("-relabel"); // for true, relabel graph
+  bool contiguous_space = true; //P.getOptionValue("--contiguousSpace") || P.getOptionValue("-contig"); // for true, contiguous space
   long r_clique_size = P.getOptionLongValue("--rClique", 3); // k as in k-cliques
   long s_clique_size = P.getOptionLongValue("--sClique", 4); // k as in k-cliques
   bool compact = P.getOptionValue("--compact");
@@ -69,23 +69,23 @@ double AppNucleusDecomposition_runner(Graph& GA, commandLine P) {
   long table_type = 5;
   long num_levels = 2;
   if (tt_str == "") {
-    table_type = P.getOptionLongValue("-tt", 0); // 1 = 1 lvl, 2 = 2 lvls, 3 = multi; 4 = multi nosearch, 5 = 2 lvls nosearch
+    table_type = 5; //P.getOptionLongValue("-tt", 0); // 1 = 1 lvl, 2 = 2 lvls, 3 = multi; 4 = multi nosearch, 5 = 2 lvls nosearch
     num_levels = P.getOptionLongValue("-nl", 0); // only for multi, # levels
   } else {
-    table_type = strToTableType(tt_str, inverse_index_map_str);
+    table_type = 5; //strToTableType(tt_str, inverse_index_map_str);
     num_levels = num_multi_levels;
   }
 
   long efficient = 1;
   if (update_agg_str == "") {
-    efficient = P.getOptionLongValue("-efficient", 1); // for list buffer; 0 = simple array, 1 = list buffer, 2 = hash table, 3 = actually 1 but use pnd, 5 = dynamic list buffer, 4 = more confusing dynamic list buffer that's deprecated
+    efficient = 5; //P.getOptionLongValue("-efficient", 1); // for list buffer; 0 = simple array, 1 = list buffer, 2 = hash table, 3 = actually 1 but use pnd, 5 = dynamic list buffer, 4 = more confusing dynamic list buffer that's deprecated
   } else {
-    efficient = strToUpdateAggregation(update_agg_str);
+    efficient = 5; //strToUpdateAggregation(update_agg_str);
   }
 
   // Internal options
   bool verify = P.getOptionValue("-verify"); // for testing; deprecated
-  bool use_compress = P.getOptionValue("-compress"); //only for 2, 3
+  bool use_compress = true; //P.getOptionValue("-compress"); //only for 2, 3
   bool output_size = P.getOptionValue("-output_size");
 
   // Hierarchy options

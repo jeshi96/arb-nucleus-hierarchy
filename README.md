@@ -113,17 +113,15 @@ Note that the `-s` flag must be set to indicate a symmetric
 (undirected) graph, and the `-rounds 1` argument must be passed in.
 
 For the exact nucleus decomposition hierarchy (in `benchmarks/NucleusDecomposition/`), 
-the following default flags must necessarily be passed in as well: 
-`-compress -relabel -efficient 5 -tt 5 -contig`.
-The options for arguments are:
+the options for arguments are:
 * `-r` followed by an integer specifying r
 * `-ss` followed by an integer specifying s
 * `-efficient_inline`, which should be used if ANH-EL is desired (the default is ANH-TE)
 * `-inline`, which should be used if ANH-BL is desired (the default is ANH-TE)
 
 To run the approximate nucleus decomposition hierarchy (in `benchmarks/ApproxNucleusDecomposition/`), 
-the following default flags must necessarily be passed in as well: 
-`-compress -relabel -efficient 5 -tt 5 -contig -approx`.
+the following flag must necessarily be passed in: 
+`-approx`.
 The options for arguments are:
 * `-r` followed by an integer specifying r
 * `-ss` followed by an integer specifying s
@@ -146,5 +144,5 @@ The main executable is `NucleusDecomposition_main` in the `benchmarks/NucleusDec
 After navigating to the `benchmarks/NucleusDecomposition/` directory, a template command is:
 
 ```sh
-$ bazel run :NucleusDecomposition_main -- -s -rounds 1 -compress -relabel -efficient 5 -tt 5 -contig -r 3 -ss 4 -efficient_inline </path/to/input/graph>
+$ bazel run :NucleusDecomposition_main -- -s -rounds 1 -r 3 -ss 4 -efficient_inline </path/to/input/graph>
 ```
